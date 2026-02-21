@@ -14,6 +14,8 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "express-validator": "^7.3.1",
+    "libphonenumber-js": "^1.12.37",
     "mongoose": "^9.2.1",
     "multer": "^2.0.2"
   }
