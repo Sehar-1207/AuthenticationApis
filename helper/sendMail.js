@@ -6,7 +6,7 @@ export const sendMail = async ({ to, subject, content }) => {
             from: process.env.SMTP_MAIL,
             to,
             subject,
-            text: content.replace(/<[^>]*>?/gm, ''),
+            text: (content || '').replace(/<[^>]*>?/gm, ''),
             html: content
         };
 

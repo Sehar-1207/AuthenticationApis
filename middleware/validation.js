@@ -69,4 +69,9 @@ export const sendMailVerificationValidation =[
     .normalizeEmail({ gmail_remove_dots: true }),
 
 ];
+export const passwordResetValidation =[
+  check('email', 'Please provide email properly.')
+     .isEmail()
+     .normalizeEmail({ gmail_remove_dots: true }),  
+];
  
