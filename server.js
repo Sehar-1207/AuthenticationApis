@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import connectDB from './config/dbConfig.js';
 import userRoute from './routes/userRouter.js'
 import authRouter from "./routes/authRoute.js";
-import { mailVerification } from "./controller/authController.js";
+import { mailVerification } from "./controller/mailVerification.js";
 
 const app = express();
 app.use(express.json());

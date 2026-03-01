@@ -63,15 +63,23 @@ export const validateImageFile = (req, res, next) => {
 
   next();
 };
-export const sendMailVerificationValidation =[
- check('email', 'Please provide email properly.')
+export const sendMailVerificationValidation = [
+  check('email', 'Please provide email properly.')
     .isEmail()
     .normalizeEmail({ gmail_remove_dots: true }),
 
 ];
-export const passwordResetValidation =[
+export const passwordResetValidation = [
   check('email', 'Please provide email properly.')
-     .isEmail()
-     .normalizeEmail({ gmail_remove_dots: true }),  
+    .isEmail()
+    .normalizeEmail({ gmail_remove_dots: true }),
 ];
- 
+export const LoginValidation = [
+  check('email', 'Please provide email properly.')
+    .isEmail()
+    .normalizeEmail({ gmail_remove_dots: true }),
+    
+  check('password', 'Password should be greater than 6 characters and contain 1 lowercase, 1 uppercase, and 1 number')
+    .isStrongPassword({ minLength: 6, minLowercase: 1, minUppercase: 1, minNumbers: 1 }),
+
+];

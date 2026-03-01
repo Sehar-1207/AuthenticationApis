@@ -3,7 +3,7 @@ import { transporter } from '../config/nodeMailer.js';
 export const sendMail = async ({ to, subject, content }) => {
     try {
         const mailOptions = {
-            from: process.env.SMTP_MAIL,
+            from: process.env.SMTP_USERMAIL,
             to,
             subject,
             text: (content || '').replace(/<[^>]*>?/gm, ''),
