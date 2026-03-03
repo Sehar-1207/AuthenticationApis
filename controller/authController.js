@@ -1,202 +1,150 @@
-// import bcryptjs from "bcryptjs"; // ✅ add this at the top with your other imports
-// import User from "../models/userModel.js";
-// import { validationResult } from "express-validator"; // ✅ missing import
-// import { sendMail } from "../helper/sendMail.js";  
-// import randomString from "randomstring";
-// import passwordReset from "../models/passwordReset.js";
-
-// export const mailVerification = async (req, res) => {
-//     try {
-//         if (req.query.id == undefined) {
-//             return res.render("404");
-//         }
-
-//         const userData = await User.findOne({ _id: req.query.id });
-
-//         if (userData) {
-//             if (userData.is_verified == 1) {
-//                 return res.render('mailVerification', { message: 'Mail is already verified Successfully!' });
-//             }
-
-//             await User.findByIdAndUpdate({ _id: req.query.id }, {
-//                 $set: { is_verified: 1 }
-//             });
-
-//             return res.render('mailVerification', { message: 'Email verified successfully! You can now login.' });
-//         } else {
-//             return res.render('mailVerification', { message: "User not found!" });
-//         }
-
-//     } catch (error) {
-//         console.log(error);
-//         return res.render("404");
-//     }
-// };
-
-// export const sendMailVerification = async (req, res) => { // ✅ added req, res
-
-//     try {
-//         const error = validationResult(req);
-//         if (!error.isEmpty()) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: 'Validation errors',
-//                 error: error.array()
-//             });
-//         }
-
-//         const { email } = req.body;
-//         const userData = await User.findOne({ email });
-
-//         if (!userData) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: 'Email does not exist!'
-//             });
-//         }
-
-//         if (userData.is_verified == 1) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: 'Email is already verified!'
-//             });
-//         }
-//     } catch (error) {
-//         return res.status(400).json({
-//             success: false,
-//             msg: error.message  // ✅ return actual error message for easier debugging
-//         });
-//     }
-// };
-
-// export const forgotPassword = async (req, res) => {
-//     try {
-//         const error = validationResult(req);
-//         if (!error.isEmpty()) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: 'Validation errors',
-//                 error: error.array()
-//             });
-//         }
-
-//         const { email } = req.body;
-//         const userData = await User.findOne({ email });
-
-//         if (!userData) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: 'Email does not exist!'
-//             });
-//         }
-
-//         const randomStringList = randomString.generate(10);
-        
-//       const message = `
-//     <p>Hi <strong>${userData.name}</strong>!</p>
-//     <p>You requested a password reset. Click the link below to reset your password:</p>
-//     <a href="http://localhost:4000/api/resetPassword?token=${randomStringList}">Reset Password</a>
-// `;
-
-//         await passwordReset.deleteMany({ user_id: userData._id });
-
-//         const passwordResetDoc = new passwordReset({
-//             user_id: userData._id,
-//             token: randomStringList
-//         });
-//         await passwordResetDoc.save();
-
-//         await sendMail({ to: email, subject: "Password Reset Request", content: message }); // ✅ content: message
-
-//         return res.status(200).json({
-//             success: true,
-//             msg: 'Password reset email sent successfully! Please check your inbox.'
-//         });
-
-//     } catch (error) {
-//         return res.status(400).json({
-//             success: false,
-//             msg: error.message
-//         });
-//     }
-// };
+import bcrypt from "bcryptjs";
+import { validationResult } from "express-validator";
+import User from "../models/userModel.js";
+import generateAccessToken from "../helper/generateAccessToken.js";
+import deleteProfileImage from '../helper/deleteProfileImage.js';
 
 
-// export const resetPassword = async (req, res) => {
-//     try {
-//         if (req.query.token == undefined) {
-//             return res.render("404");
-//         }
 
-//         const token = req.query.token;
-//         const passwordResetData = await passwordReset.findOne({ token });
+export const loginUser = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: "Validation errors",
+                errors: errors.array()
+            });
+        }
 
-//         if (passwordResetData) {
-//             return res.render("resetPassword", { token }); // ✅ pass token to form
-//         } else {
-//             return res.render("404");
-//         }
+        const { email, password } = req.body;
+        const userData = await User.findOne({ email });
 
-//     } catch (error) {
-//         return res.status(400).json({
-//             success: false,
-//             msg: error.message
-//         });
-//     }
-// };
+        if (!userData) {
+            return res.status(401).json({
+                success: false,
+                message: "User not found!"
+            });
+        }
 
-// export const resetUpdatePassword = async (req, res) => {
-//     try {
-//         const { token, password, c_password } = req.body;
+        const isPasswordValid = await bcrypt.compare(password, userData.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid! Check your email and password and try again."
+            });
+        }
 
-//         if (!token) {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: "Token is missing!"
-//             });
-//         }
+        if (userData.is_verified === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Your account is not verified yet. Please verify your account to login.",
+                error: "Account not verified"
+            });
+        }
 
-//         if (password !== c_password) {
-//             return res.render('resetPassword', {
-//                 token,
-//                 error: "Passwords do not match!"
-//             });
-//         }
+        const accesstoken = generateAccessToken({ user: userData });
+        const refreshtoken = generateAccessToken({ user: userData });
 
-//         const passwordResetData = await passwordReset.findOne({ token }); // ✅ fixed
+        return res.status(200).json({
+            success: true,
+            message: "Login successful",
+            user: userData,
+            accesstoken: accesstoken,
+            refreshtoken: refreshtoken,
+            tokenType: 'Bearer'
+        });
 
-//         if (passwordResetData) {
-//             const hashedPassword = await bcryptjs.hash(password, 10);
-//             await User.updateOne(
-//                 { _id: passwordResetData.user_id },
-//                 { $set: { password: hashedPassword } }
-//             );
-//             await passwordReset.deleteMany({ user_id: passwordResetData.user_id });
-//             return res.redirect('/resetSuccess'); // ✅ redirects on success
-//         } else {
-//             return res.status(400).json({
-//                 success: false,
-//                 msg: "Invalid or expired token!"
-//             });
-//         }
 
-//     } catch (error) {
-//         return res.status(400).json({
-//             success: false,
-//             msg: error.message
-//         });
-//     }
-// };
 
-// export const resetSuccess = (req, res) => {
-//     try {
-//         return res.render('/api/resetSuccess'); // ✅ render success page
-        
-//     } catch (error) {
-//         return res.render("404");
-//     }
-// }
-
-export const  loginUser = async(req,res)=>{
-
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
 };
+export const profile = async(req,res)=>{
+    try {
+        const userProfileData=req.user.user;
+        return res.status(200).json({
+            success:true,
+            message:"User profile data retrivedd in request successfully",
+            data:userProfileData,
+        })
+
+        
+    } catch (error) {
+        return res.status(400).json({
+            success:false,
+            message:"User profile not found!",
+        });
+    }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const error = validationResult(req);
+
+    if (!error.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        error: error.array()
+      });
+    }
+
+    const { name, mobile } = req.body;
+
+    const data = {
+      name,
+      mobile
+    };
+
+    // If image uploaded, attach it
+    if (req.file) {
+      data.image = 'images/' + req.file.filename;
+      const oldUser =await User.findOne({_id:req.user.user._id});
+      const oldImagePath = path.join(__dirname, '../public/' + oldUser.image);
+      await deleteProfileImage(oldImagePath);
+    }
+
+    await User.findByIdAndUpdate(
+      req.user.user._id,
+      { $set: data },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "User Profile Updated Successfully"
+    });
+
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+export const refreshToken = async(req,res)=>{
+    try {
+        const userId = req.user.user._id;
+        User.findOne({_id:userId});
+       const accessToken = await generateAccessToken({user:userId});
+       const refreshToken = await generateAccessToken({user:userId});
+       return res.status(200).json({
+        success:true,
+        msg:"Token refresh",
+        accessToken:accessToken,
+        refreshToken:refreshToken
+       });
+
+    } catch (error) {
+         return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+    }
+}
+

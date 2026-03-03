@@ -1,5 +1,6 @@
-import { check, validationResult } from "express-validator";
+import { check } from "express-validator";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { mailValidation, passwordValidation } from "./sharedValidations";
 
 // Express-validator for form fields
 export const registerUserValidation = [
@@ -7,12 +8,8 @@ export const registerUserValidation = [
     .notEmpty()
     .isLength({ min: 3, max: 20 }),
 
-  check('email', 'Please provide email properly.')
-    .isEmail()
-    .normalizeEmail({ gmail_remove_dots: true }),
-
-  check('password', 'Password should be greater than 6 characters and contain 1 lowercase, 1 uppercase, and 1 number')
-    .isStrongPassword({ minLength: 6, minLowercase: 1, minUppercase: 1, minNumbers: 1 }),
+  mailValidation,
+  passwordValidation,
 
   check('mobile')
     .custom((value) => {
@@ -64,22 +61,33 @@ export const validateImageFile = (req, res, next) => {
   next();
 };
 export const sendMailVerificationValidation = [
-  check('email', 'Please provide email properly.')
-    .isEmail()
-    .normalizeEmail({ gmail_remove_dots: true }),
-
+  mailValidation,
 ];
 export const passwordResetValidation = [
-  check('email', 'Please provide email properly.')
-    .isEmail()
-    .normalizeEmail({ gmail_remove_dots: true }),
+  mailValidation,
 ];
 export const LoginValidation = [
-  check('email', 'Please provide email properly.')
-    .isEmail()
-    .normalizeEmail({ gmail_remove_dots: true }),
-    
-  check('password', 'Password should be greater than 6 characters and contain 1 lowercase, 1 uppercase, and 1 number')
-    .isStrongPassword({ minLength: 6, minLowercase: 1, minUppercase: 1, minNumbers: 1 }),
+  mailValidation,
+  passwordValidation,
 
+];
+
+export const updateProfileValidation=[
+  check('name', 'Please enter your name')
+    .notEmpty()
+    .isLength({ min: 3, max: 20 }),
+  passwordValidation,
+
+  check('mobile')
+    .custom((value) => {
+      const phoneNumber = parsePhoneNumberFromString(value);
+      if (!phoneNumber || !phoneNumber.isValid()) {
+        throw new Error('Enter a valid phone number.');
+      }
+      return true;
+    })
+    .customSanitizer((value) => {
+      const phoneNumber = parsePhoneNumberFromString(value);
+      return phoneNumber ? phoneNumber.number : value;
+    })
 ];
