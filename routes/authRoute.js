@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {verifyToken} from '../middleware/authentication.js';
-import {loginUser , profile, updateProfile, refreshToken} from '../controller/authController.js';
+import {loginUser , profile, updateProfile, refreshToken,logoutUser} from '../controller/authController.js';
 import {mailVerification, sendMailVerification} from '../controller/mailVerification.js';
 import {forgotPassword, resetPassword,resetUpdatePassword, resetSuccess } from '../controller/passwordController.js';
 import {LoginValidation, passwordResetValidation, sendMailVerificationValidation,updateProfileValidation} from '../middleware/validation.js';
@@ -27,6 +27,6 @@ authRouter.post('/login',LoginValidation,loginUser);
 authRouter.get('/profile',verifyToken,profile);
 authRouter.post('/updateProfile',verifyToken, updateProfileValidation, updateProfile);
 authRouter.get('/refreshToken', verifyToken,refreshToken);
-
+authRouter.get('/logoutUser',verifyToken,logoutUser);
 export default authRouter;
 
