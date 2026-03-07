@@ -1,6 +1,6 @@
 import User from "../models/userModel.js";
 import { validationResult } from "express-validator";
-import { sendMail } from "../helper/sendMail.js"; // ✅ missing import
+import { sendMail } from "../helper/sendMail.js"; 
 
 export const mailVerification = async (req, res) => {
     try {

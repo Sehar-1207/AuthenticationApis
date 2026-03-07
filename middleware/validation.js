@@ -91,3 +91,13 @@ export const updateProfileValidation=[
       return phoneNumber ? phoneNumber.number : value;
     })
 ];
+
+export const otpVerificationValididations=[
+ mailValidation,
+];
+
+export const otpVerification=[
+ check('user_id', 'user Id is required.').not().isEmpty(),
+ check('otp', 'OTP is required').not().isEmpty(),
+];
+
