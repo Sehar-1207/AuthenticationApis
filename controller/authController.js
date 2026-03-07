@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
 import { validationResult } from "express-validator";
 import User from "../models/userModel.js";
-import generateAccessToken from "../helper/generateAccessToken.js";
-import deleteProfileImage from "../helper/deleteProfileImage.js";
-import blacklistToken from "../models/blacklistTokenModel.js";
+import {generateAccessToken} from "../helper/generatingTokens.js";
+import {deleteProfileImage} from "../helper/deleteProfileImage.js";
+import blacklistToken from "../models/blackListToken.js";
 
 export const loginUser = async (req, res) => {
   try {

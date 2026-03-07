@@ -1,6 +1,6 @@
 import { check } from "express-validator";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import { mailValidation, passwordValidation } from "./sharedValidations";
+import { mailValidation, passwordValidation } from "./sharedValidations.js";
 
 // Express-validator for form fields
 export const registerUserValidation = [

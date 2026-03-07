@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import blackListToken from "../models/blackListToken.js";
-import generateAccessToken from "../helper/generateAccessToken.js";
 
 //User request verifier
 export const verifyToken = async (req, res, next) => {
